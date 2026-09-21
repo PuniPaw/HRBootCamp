@@ -1,0 +1,14 @@
+CREATE TABLE professor(code INT PRIMARY KEY, NAME VARCHAR(5), lab INT CHECK(lab BETWEEN 100 AND 500));
+
+CREATE TABLE course(code INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(10) UNIQUE, textbookName VARCHAR(15), professor INT, 
+FOREIGN KEY(professor) REFERENCES professor(code));
+
+CREATE TABLE student(code INT PRIMARY KEY, name VARCHAR(5), course INT, FOREIGN KEY(course) REFERENCES course(CODE), grade INT DEFAULT 1 CHECK(grade BETWEEN 1 AND 4));
+
+INSERT INTO professor VALUES(1,'홍길동',100);
+
+
+
+DROP TABLE student;
+DROP TABLE course;
+DROP TABLE professor; 
