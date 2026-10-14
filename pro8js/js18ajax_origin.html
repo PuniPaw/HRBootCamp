@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script>
+        window.onload() = () => {
+            document.querySelector("#btnGet").onclick = getFunc
+            document.querySelector("#btnPost").onclick = postFunc
+        }
+
+        let xhr;
+
+        function getFunc(){
+            alert('a');
+        }
+
+        function postFunc(){
+            
+        }
+    </script>
+</head>
+<body>
+    <h2>ajax 이해</h2>
+    <form name="frm">
+        이름: .<input type="text" name="name" value="tom"><br>
+        나이: .<input type="text" name="age" value="33"><br>
+    </form>
+</body>
+</html>

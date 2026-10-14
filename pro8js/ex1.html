@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script> 
+    <script>
+        window.onload = () => {
+            document.querySelector("#myForm").onsubmit = (e) => {
+                e.preventDefault();
+                checkLogin()
+            };
+        }
+
+        function showGogekList(data, title){
+            let output = `<h3>${title}</h3>`;
+            output += `<table border="1">`;
+            output += `<tr><th>고객명</th><th>고객전화</th><th>성별</th></tr>`;    
+
+            data.forEach(item => {
+                const genderClass = item.gender === "남" ? "male" : "female";
+                output += `
+                    <tr>
+                        <td class="${genderClass}">${item.name}</td>
+                        <td>${item.tel}</td>
+                        <td>${item.gender}</td>
+                    </tr>
+                `;
+            });
+            output += `</table>`;
+            
+            document.querySelector("#result").innerHTML = output;
+        }
+
+        async function checkLogin(){
+            const id = document.querySelector("#id").value.trim();
+            const pw = document.querySelector("#pw").value.trim();
+            const result = document.querySelector("#result");
+
+            try{
+                const response = await axios.get("profile.json");
+                const data = response.data;  // JSON 파싱이 자동으로 됨
+
+                if(!Array.isArray(data)){
+                    throw new Error(`JSON 데이터가 배열이 아니네요`);
+                }
+
+                const user = data.find(item => item.id === id && item.pw === pw);
+
+                if(!user){
+                    result.innerHTML = "<p style='color:red;'>ID 또는 PW가 올바르지 않습니다.</p>";
+                    return;
+                }
+
+                funcAsync();
+
+            }catch(error){
+                if(error.response){
+                    // 서버가 200번대 외의 응답을 준 경우
+                    result.innerHTML = "오류 발생 : " + `HTTP 오류 : ${error.response.status}`;
+                }else{
+                    // 네트워크 오류, JSON 형식 오류 등
+                    result.innerHTML = "오류 발생 : " + error.message;
+                }
+            }
+        }
+
+        async function funcAsync(){
+            const result = document.querySelector("#result");
+
+            result.innerHTML = "데이터를 불러 오는 중...";
+
+            try{
+                const response = await axios.get("gogekdata.json");
+                const data = response.data;
+
+                if(!Array.isArray(data)){
+                    throw new Error(`JSON 데이터가 배열이 아니네요`);
+                }
+
+                showGogekList(data, "ASYNC AXIOS 결과");
+            }catch(error){
+                if(error.response){
+                    result.innerHTML = "오류 발생 : " + `HTTP 오류 : ${error.response.status}`;
+                }else{
+                    result.innerHTML = "오류 발생 : " + error.message;
+                }
+            }finally{
+                console.log("axios 작업 종료");
+            }
+        }
+    </script>
+</head>
+<body>
+    <h3>문제</h3>
+    <form id="myForm">
+        <input id="id" type="text"/><br>
+        <input id="pw" type="text"/><br>
+        <button style="margin-top: 8px;" type="submit">관리 고객 출력</button>
+    </form>
+<hr>
+<div id="result"></div> 
+</body>
+</html>
+<style>
+    .male { color: orange; font-weight: bold; }
+    .female { color: blue; font-weight: bold; }
+</style>
