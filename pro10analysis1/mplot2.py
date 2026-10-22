@@ -81,3 +81,9 @@ fdata = fdata.cumsum()
 print(fdata.head(3))
 plt.plot(fdata)
 plt.show()
+
+# pandas의 plot 기능
+fdata.plot(kind='bar')      # 
+plt.xlabel('time')
+plt.ylabel('data')
+plt.show()
