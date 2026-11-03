@@ -69,3 +69,75 @@ print(f'r2_score(결정계수): {r2_score(test_set.iloc[:, [3]], pred)}')
 plt.scatter(train_set.iloc[:,[2]], train_set.iloc[:,[3]], color='red')
 plt.plot(np.array(test_set.iloc[:,[2]]), model_linear.predict(test_set.iloc[:,[2]]))
 plt.show()
+
+# 회귀분석 방법 2 - 정규화(규제) 모델 : Ridge / Lasso / ElasticNet ------
+# 규제 효과를 보기 위해 독립변수를 3개로 늘림 (sepal length, sepal width, petal length) -> petal width 예측
+# alpha : 규제 강도. 클수록 계수를 더 강하게 줄임 (alpha=0 이면 일반 LinearRegression과 같음)
+x_train = train_set.iloc[:, [0, 1, 2]]
+y_train = train_set.iloc[:, 3]
+x_test = test_set.iloc[:, [0, 1, 2]]
+y_test = test_set.iloc[:, 3]
+
+models = {
+    'Linear': LinearRegression(),
+    'Ridge(L2)': Ridge(alpha=10),
+    'Lasso(L1)': Lasso(alpha=0.1),
+    'ElasticNet': ElasticNet(alpha=0.1, l1_ratio=0.5),   # l1_ratio: L1 비율 (0.5 -> L1:L2 = 5:5)
+}
+
+print('\n모델별 회귀계수 및 성능 비교')
+coef_df = pd.DataFrame(index=x_train.columns)
+for name, m in models.items():
+    m.fit(x_train, y_train)
+    pred = m.predict(x_test)
+    coef_df[name] = m.coef_
+    print(f'{name:12s} r2: {r2_score(y_test, pred):.4f}   mse: {mean_squared_error(y_test, pred):.4f}')
+print(np.round(coef_df, 4))
+# Linear       r2: 0.9331   mse: 0.0356
+# Ridge(L2)    r2: 0.9432   mse: 0.0302
+# Lasso(L1)    r2: 0.9407   mse: 0.0316
+# ElasticNet   r2: 0.9415   mse: 0.0311
+#                    Linear  Ridge(L2)  Lasso(L1)  ElasticNet
+# sepal length (cm) -0.2666    -0.0390      0.000      0.0000
+# sepal width (cm)   0.2524     0.0532      0.000      0.0000
+# petal length (cm)  0.5578     0.4300      0.389      0.3991
+# -> 규제 모델들이 test 성능이 조금 더 좋음 (과적합 완화)
+# Lasso는 중요하지 않은 특성의 계수를 0으로 만들어 특성 선택 효과가 있음
+
+
+# alpha 변화에 따른 계수 변화 확인 (Ridge vs Lasso)
+alphas = [0.001, 0.01, 0.1, 1, 10, 100]
+ridge_coefs, lasso_coefs = [], []
+for a in alphas:
+    ridge_coefs.append(Ridge(alpha=a).fit(x_train, y_train).coef_)
+    lasso_coefs.append(Lasso(alpha=a).fit(x_train, y_train).coef_)
+
+print('\nRidge alpha별 계수\n', pd.DataFrame(ridge_coefs, index=alphas, columns=x_train.columns).round(4))
+print('\nLasso alpha별 계수\n', pd.DataFrame(lasso_coefs, index=alphas, columns=x_train.columns).round(4))
+# Ridge : alpha가 커져도 계수가 0에 '가까워질' 뿐 정확히 0이 되지는 않음
+#          sepal length  sepal width  petal length
+# 0.001       -0.2666       0.2523       0.5577
+# 1.000       -0.2176       0.2057       0.5312
+# 10.000      -0.0390       0.0532       0.4300
+# 100.000      0.0856      -0.0176       0.2915
+# Lasso : alpha=0.1 부터 sepal 계수가 정확히 0 -> petal length만 남음 (특성 선택), alpha>=10 이면 전부 0
+#          sepal length  sepal width  petal length
+# 0.001       -0.2483       0.2336       0.5480
+# 0.010       -0.0863       0.0661       0.4616
+# 0.100        0.0000       0.0000       0.3890
+# 1.000        0.0000       0.0000       0.0864
+# 10.000       0.0000       0.0000       0.0000
+
+
+# 시각화 : alpha가 커질수록 계수가 0으로 줄어드는 모습
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+for ax, coefs, title in zip(axes, [ridge_coefs, lasso_coefs], ['Ridge (L2)', 'Lasso (L1)']):
+    ax.plot(alphas, coefs, marker='o')
+    ax.set_xscale('log')
+    ax.axhline(0, color='gray', linestyle='--')
+    ax.set_title(title)
+    ax.set_xlabel('alpha (log scale)')
+    ax.set_ylabel('coefficient')
+    ax.legend(x_train.columns)
+    ax.grid(True)
+plt.show()

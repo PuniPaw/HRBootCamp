@@ -5,8 +5,6 @@
 # log(p / (1-p)) = wx + b 라고 정의됨
 # 이를 p에 대해 풀면 p = 1 / (1 + e^(-z))  → 시그모이드 함수
 # 그러므로 z = wx + b --> sigmoid(z) --> p( 0 ~ 1 ): 이항 분류 (p >= 0.5 이면 1, 아니면 0)
-# log(P / (1-p)) = wx + b 라고 정의됨
-# 그러므로 z = wx + b --> sigmoid(z) --> p( 0 ~ 1 ): 이항 분류
 
 # sigmoid function 수식에 의해 변환된 값 확인
 
@@ -50,7 +48,7 @@ print('p[:3](확률): ', p[:3])
 
 # 시각화
 plt.figure(figsize=(8, 5))
-plt.plot(x, p, label='sizmoid(z)', color='blue')
+plt.plot(x, p, label='sigmoid(z)', color='blue')
 plt.axhline(0.5, color='red', linestyle='--')
 plt.title('z=wx + b --> sigmoid --> 확률(이항)')
 plt.xlabel('x(입력값)')
